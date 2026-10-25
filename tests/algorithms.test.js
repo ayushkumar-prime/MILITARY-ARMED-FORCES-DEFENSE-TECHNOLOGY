@@ -1,0 +1,10 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {assess,predict,triage,shortestRoute,changes} from '../algorithms.js';
+test('prediction follows constant velocity',()=>assert.deepEqual(predict({x:10,y:20,vx:2,vy:-1}),{x:50,y:0}));
+test('unknown low object approaching zone is high risk',()=>{assert.equal(assess({x:65,y:50,vx:-.1,vy:0,altitude:100,authorized:false}).score,100);});
+test('authorized distant receding object has low risk',()=>assert.equal(assess({x:90,y:90,vx:1,vy:1,altitude:200,authorized:true}).level,'Low'));
+test('triage boundaries and precedence',()=>{assert.equal(triage({spo2:89,heart:80}),'Immediate');assert.equal(triage({spo2:90,heart:110}),'Priority');assert.equal(triage({spo2:95,heart:110}),'Stable');assert.equal(triage({spo2:98,heart:131}),'Immediate');});
+test('shortest route avoids blocked bridge',()=>{assert.equal(shortestRoute().minutes,6);assert.deepEqual(shortestRoute(['Aid post|Bridge']),{path:['Aid post','Junction','Clinic'],minutes:9});});
+test('fully blocked origin returns no route',()=>assert.deepEqual(shortestRoute(['Aid post|Bridge','Aid post|Junction']),{path:[],minutes:null}));
+test('change detection includes threshold boundary and negative change',()=>assert.deepEqual(changes([100,100,100],[130,71,60],30),[{cell:1,delta:30},{cell:3,delta:-40}]));
